@@ -5,7 +5,10 @@ import json
 print("Python version:", sys.version)
 print("Python executable path:", sys.executable)
 
-with open('./ai-models/heart.pkl', 'rb') as model_fileL:
+import os
+
+model_path = os.path.join(os.getcwd(), 'aimodels', 'heart.pkl')
+with open(model_path, 'rb') as model_fileL:
     model = pickle.load(model_fileL)
 
 data = list(json.loads(sys.argv[3]).values())

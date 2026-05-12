@@ -5,18 +5,17 @@ import path from "path";
 
 const router = express.Router();
 
-const diabetesModel = "D:\\AI-MedLab\\backend\\aimodels\\diabetes.pkl";
-const heartModel = "D:\\AI-MedLab\\backend\\aimodels\\heart.pkl";
-const kidneyModel = "D:\\AI-MedLab\\backend\\aimodels\\kidney.pkl";
-const liverModel = "D:\\AI-MedLab\\backend\\aimodels\\kidney.pkl";
-const breastCancerModel = "D:\\AI-MedLab\\backend\\aimodels\\breast_cancer.pkl";
+const diabetesModel = path.join(process.cwd(), "aimodels", "diabetes.pkl");
+const heartModel = path.join(process.cwd(), "aimodels", "heart.pkl");
+const kidneyModel = path.join(process.cwd(), "aimodels", "kidney.pkl");
+const liverModel = path.join(process.cwd(), "aimodels", "kidney.pkl");
+const breastCancerModel = path.join(process.cwd(), "aimodels", "breast_cancer.pkl");
 
-const pythonScriptPathForDiabetes = "D:\\AI-MedLab\\backend\\predict.py";
-const pythonScriptPathForHeart = "D:\\AI-MedLab\\backend\\heart.py";
-const pythonScriptPathForKidney = "D:\\AI-MedLab\\backend\\kidney.py";
-const pythonScriptPathForLiver = "D:\\AI-MedLab\\backend\\kidney.py";
-const pythonScriptPathForBreastCancer =
-  "D:\\AI-MedLab\\backend\\breast-cancer.py";
+const pythonScriptPathForDiabetes = path.join(process.cwd(), "predict.py");
+const pythonScriptPathForHeart = path.join(process.cwd(), "heart.py");
+const pythonScriptPathForKidney = path.join(process.cwd(), "kidney.py");
+const pythonScriptPathForLiver = path.join(process.cwd(), "kidney.py");
+const pythonScriptPathForBreastCancer = path.join(process.cwd(), "breast-cancer.py");
 
 router.post("/diabetes", (req, res) => {
   try {

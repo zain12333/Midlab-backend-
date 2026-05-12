@@ -1,9 +1,10 @@
 import express from "express";
 import { spawn } from "child_process";
+import path from "path";
 const router = express.Router({ mergeParams: true });
 
-const pythonScriptPathForSymptoms = "D:\\AI-MedLab\\backend\\symptoms.py";
-const symptomsModel = "D:\\AI-MedLab\\backend\\aimodels\\svc.pkl";
+const pythonScriptPathForSymptoms = path.join(process.cwd(), "symptoms.py");
+const symptomsModel = path.join(process.cwd(), "aimodels", "svc.pkl");
 
 router.post("/symptoms", (req, res) => {
   let responseSent = false; // Flag to track if response has been sent

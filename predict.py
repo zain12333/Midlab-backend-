@@ -3,7 +3,10 @@ import numpy as np
 import pickle
 import json
 
-with open('./aimodels/diabetes.pkl', 'rb') as model_fileL:
+import os
+
+model_path = os.path.join(os.getcwd(), 'aimodels', 'diabetes.pkl')
+with open(model_path, 'rb') as model_fileL:
     model = pickle.load(model_fileL)
 
 data = list(json.loads(sys.argv[3]).values())
