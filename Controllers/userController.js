@@ -1,16 +1,52 @@
 import User from "../models/UserSchema.js";
 import Booking from "../models/BookingSchema.js";
 import Doctor from "../models/DoctorSchema.js";
+import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
 export const updateUser = async (req, res) => {
-  const id = req.params.id;
+  const id = req.userId || req.params.id;
   try {
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "User id is required",
+      });
+    }
+
+    const allowedFields = [
+      "name",
+      "email",
+      "phone",
+      "photo",
+      "gender",
+      "bloodType",
+      "password",
+    ];
+
+    const updates = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    }
+
+    if (typeof updates.password === "string") {
+      const trimmedPassword = updates.password.trim();
+      if (!trimmedPassword) {
+        delete updates.password;
+      } else {
+        const salt = await bcrypt.genSalt(10);
+        updates.password = await bcrypt.hash(trimmedPassword, salt);
+      }
+    }
+
     const updateUser = await User.findByIdAndUpdate(
       id,
-      { $set: req.body },
-      { new: true }
-    );
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select("-password");
+
     if (!updateUser) {
       return res.status(404).json({
         success: false,

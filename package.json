@@ -10,7 +10,7 @@
     "start": "node index.js",
     "start-dev": "nodemon index.js"
   },
-  "author": "Abdul Wahab",
+  "author": "Muhammad Umer",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",

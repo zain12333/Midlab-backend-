@@ -29,7 +29,7 @@ router.post("/forgot-password", async (req, res) => {
     });
     const mailOptions = {
       from: {
-        name: "Abdul Wahab",
+        name: "Muhammad Umer",
         user: process.env.USER,
       },
       to: "awminhas619@gmail.com",
