@@ -7,7 +7,8 @@ print("Python executable path:", sys.executable)
 
 import os
 
-model_path = os.path.join(os.getcwd(), 'aimodels', 'liver.pkl')
+base_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(base_dir, 'aimodels', 'liver.pkl')
 with open(model_path, 'rb') as model_fileL:
     model = pickle.load(model_fileL)
 

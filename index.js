@@ -3,6 +3,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import path from "path";
+import { backendRoot } from "./utils/paths.js";
 import authRoute from "./Routes/auth.js";
 import userRoute from "./Routes/user.js";
 import doctorRoute from "./Routes/doctor.js";
@@ -14,7 +16,7 @@ import contactRoute from "./Routes/contact.js";
 import forgotPassRoute from "./Routes/forgot-password.js";
 import healthRoute from "./Routes/healthPredict.js";
 
-dotenv.config();
+dotenv.config({ path: path.join(backendRoot, ".env") });
 
 const app = express();
 const port = process.env.PORT || 8000;

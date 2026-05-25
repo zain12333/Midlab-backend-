@@ -2,20 +2,21 @@ import express from "express";
 import { spawn } from "child_process";
 import multer from "multer";
 import path from "path";
+import { backendRoot } from "../utils/paths.js";
 
 const router = express.Router();
 
-const diabetesModel = path.join(process.cwd(), "aimodels", "diabetes.pkl");
-const heartModel = path.join(process.cwd(), "aimodels", "heart.pkl");
-const kidneyModel = path.join(process.cwd(), "aimodels", "kidney.pkl");
-const liverModel = path.join(process.cwd(), "aimodels", "kidney.pkl");
-const breastCancerModel = path.join(process.cwd(), "aimodels", "breast_cancer.pkl");
+const diabetesModel = path.join(backendRoot, "aimodels", "diabetes.pkl");
+const heartModel = path.join(backendRoot, "aimodels", "heart.pkl");
+const kidneyModel = path.join(backendRoot, "aimodels", "kidney.pkl");
+const liverModel = path.join(backendRoot, "aimodels", "kidney.pkl");
+const breastCancerModel = path.join(backendRoot, "aimodels", "breast_cancer.pkl");
 
-const pythonScriptPathForDiabetes = path.join(process.cwd(), "predict.py");
-const pythonScriptPathForHeart = path.join(process.cwd(), "heart.py");
-const pythonScriptPathForKidney = path.join(process.cwd(), "kidney.py");
-const pythonScriptPathForLiver = path.join(process.cwd(), "kidney.py");
-const pythonScriptPathForBreastCancer = path.join(process.cwd(), "breast-cancer.py");
+const pythonScriptPathForDiabetes = path.join(backendRoot, "predict.py");
+const pythonScriptPathForHeart = path.join(backendRoot, "heart.py");
+const pythonScriptPathForKidney = path.join(backendRoot, "kidney.py");
+const pythonScriptPathForLiver = path.join(backendRoot, "kidney.py");
+const pythonScriptPathForBreastCancer = path.join(backendRoot, "breast-cancer.py");
 
 router.post("/diabetes", (req, res) => {
   try {
@@ -246,7 +247,7 @@ router.post("/breast-cancer", (req, res) => {
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.resolve(`./public/uploads/`));
+    cb(null, path.join(backendRoot, "public", "uploads"));
   },
   filename: function (req, file, cb) {
     const fileName = `${Date.now()}-${file.originalname}`;
@@ -262,7 +263,7 @@ router.post("/predict-pneumonia", upload.single("image"), (req, res) => {
     const imagePath = req.file.path;
 
     // Path to the Python script for pneumonia prediction
-    const pythonScriptPathForPneumonia = "D:\\AI-MedLab\\backend\\pneumonia.py";
+    const pythonScriptPathForPneumonia = path.join(backendRoot, "pneumonia.py");
 
     // Spawn a Python process to execute the prediction script
     const pythonProcess = spawn("python", [
@@ -313,7 +314,7 @@ router.post("/predict-malaria", upload.single("image"), (req, res) => {
     const imagePath = req.file.path;
 
     // Path to the Python script for pneumonia prediction
-    const pythonScriptPathForPneumonia = "D:\\AI-MedLab\\backend\\malaria.py";
+    const pythonScriptPathForPneumonia = path.join(backendRoot, "malaria.py");
 
     // Spawn a Python process to execute the prediction script
     const pythonProcess = spawn("python", [

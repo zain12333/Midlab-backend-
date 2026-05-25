@@ -1,27 +1,36 @@
 import express from "express";
 import { spawn } from "child_process";
 import path from "path";
+import { backendRoot } from "../utils/paths.js";
 const router = express.Router({ mergeParams: true });
 
-const pythonScriptPathForSymptoms = path.join(process.cwd(), "symptoms.py");
-const symptomsModel = path.join(process.cwd(), "aimodels", "svc.pkl");
+const pythonScriptPathForSymptoms = path.join(backendRoot, "symptoms.py");
+const symptomsModel = path.join(backendRoot, "aimodels", "svc.pkl");
 
 router.post("/symptoms", (req, res) => {
   let responseSent = false; // Flag to track if response has been sent
   try {
-    const data = req.body.data;
-    console.log({ dataInString: JSON.stringify({ data }) });
+    const rawSymptoms = req.body.data;
+    const symptoms = Array.isArray(rawSymptoms)
+      ? rawSymptoms
+      : typeof rawSymptoms === "string"
+        ? rawSymptoms.split(",")
+        : [];
+    const normalizedSymptoms = symptoms
+      .map((item) => item.toString().trim().toLowerCase().replace(/\s+/g, "_"))
+      .filter(Boolean);
+
+    console.log({ dataInString: JSON.stringify({ data: normalizedSymptoms }) });
     const pythonProcess = spawn("python", [
       pythonScriptPathForSymptoms,
       "--loads",
       symptomsModel,
-      JSON.stringify({ data }),
+      JSON.stringify({ data: normalizedSymptoms }),
     ]);
-    let prediction;
+
+    let stdoutBuffer = "";
     pythonProcess.stdout.on("data", (data) => {
-      const dataString = data.toString();
-      console.log("Python script output===========:", JSON.parse(dataString));
-      prediction = JSON.parse(dataString);
+      stdoutBuffer += data.toString();
     });
 
     pythonProcess.stderr.on("data", (data) => {
@@ -30,12 +39,37 @@ router.post("/symptoms", (req, res) => {
 
     pythonProcess.on("close", (code) => {
       console.log("Python process closed with code:", code);
-      console.log("Prediction:", prediction);
+      const output = stdoutBuffer.trim();
+      let prediction;
+      if (output) {
+        try {
+          prediction = JSON.parse(output);
+        } catch (error) {
+          const lines = output
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter(Boolean);
+          const jsonLine = [...lines].reverse().find((line) => line.startsWith("{") || line.startsWith("["));
+          if (jsonLine) {
+            try {
+              prediction = JSON.parse(jsonLine);
+            } catch (parseError) {
+              console.error("Failed to parse Python output:", parseError);
+            }
+          }
+        }
+      }
+
       if (!responseSent) {
-        res.json({ data: prediction });
+        if (prediction) {
+          res.json({ data: prediction });
+        } else {
+          res.status(500).send("Invalid prediction output");
+        }
         responseSent = true;
       }
     });
+
     pythonProcess.on("error", (error) => {
       console.error("Python process error:", error);
       if (!responseSent) {

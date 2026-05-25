@@ -12,7 +12,8 @@ diseases_list = {15: 'Fungal infection', 4: 'Allergy', 16: 'GERD', 9: 'Chronic c
 import os
 
 # load databasedataset===================================
-base_path = os.path.join(os.getcwd(), "HealthPredict")
+base_dir = os.path.dirname(os.path.abspath(__file__))
+base_path = os.path.join(base_dir, "HealthPredict")
 sym_des = pd.read_csv(os.path.join(base_path, "symtoms_df.csv"))
 precautions = pd.read_csv(os.path.join(base_path, "precautions_df.csv"))
 workout = pd.read_csv(os.path.join(base_path, "workout_df.csv"))
@@ -20,19 +21,18 @@ description = pd.read_csv(os.path.join(base_path, "description.csv"))
 medications = pd.read_csv(os.path.join(base_path, "medications.csv"))
 diets = pd.read_csv(os.path.join(base_path, "diets.csv"))
 
-model_path = os.path.join(os.getcwd(), "aimodels", "svc.pkl")
+model_path = os.path.join(base_dir, "aimodels", "svc.pkl")
 with open(model_path, 'rb') as model_fileL:
 #with open("./aimodels/svc.pkl", 'rb') as model_fileL:
     model = pickle.load(model_fileL)
 
 def get_predicted_value(symptoms):
-    print(symptoms)
     input_vector = np.zeros(len(symptoms_dict))
     for symptom in symptoms:
         if symptom in symptoms_dict:
             input_vector[symptoms_dict[symptom]] = 1
         else:
-            print(f"Warning: symptom '{symptom}' not found in symptoms_dict")
+            print(f"Warning: symptom '{symptom}' not found in symptoms_dict", file=sys.stderr)
     return diseases_list[model.predict([input_vector])[0]]
 
 #============================================================
@@ -55,11 +55,27 @@ def helper(dis):
 
 
     return desc,pre,med,die,wrkout
-data=sys.argv[3]
+def normalize_symptoms(value):
+    if isinstance(value, str):
+        items = value.split(",")
+    elif isinstance(value, list):
+        items = value
+    else:
+        items = []
+
+    normalized = []
+    for item in items:
+        if item is None:
+            continue
+        text = str(item).strip().lower().replace(" ", "_")
+        if text:
+            normalized.append(text)
+    return normalized
+
+data = sys.argv[3]
 data_dict = json.loads(data)
-symptoms = data_dict['data']
+symptoms = normalize_symptoms(data_dict.get('data'))
 predicted_disease = get_predicted_value(symptoms)
-print(predicted_disease)
 dis_des, precautions, medications, rec_diet, workout = helper(predicted_disease)
 
 my_precautions = []
@@ -74,5 +90,5 @@ data={
     "rec_diet": str(rec_diet),
     "workout": str(workout) 
 }
-json_string = json.dumps(data, indent=2)
+json_string = json.dumps(data)
 print(json_string)
