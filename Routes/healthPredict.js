@@ -4,6 +4,21 @@ import path from "path";
 import { backendRoot } from "../utils/paths.js";
 const router = express.Router({ mergeParams: true });
 
+const getPythonCommand = () => {
+  // Full path to Python 3.14 installation
+  const fullPath = "C:\\Users\\zaina\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe";
+  const candidates = [
+    process.env.PYTHON_PATH,
+    fullPath,
+    process.env.PYTHON,
+    process.platform === "win32" ? null : "python3",
+    "python",
+    process.platform === "win32" ? "py" : null,
+  ].filter(Boolean);
+  
+  return candidates[0] || "python";
+};
+
 const pythonScriptPathForSymptoms = path.join(backendRoot, "symptoms.py");
 const symptomsModel = path.join(backendRoot, "aimodels", "svc.pkl");
 
@@ -21,7 +36,7 @@ router.post("/symptoms", (req, res) => {
       .filter(Boolean);
 
     console.log({ dataInString: JSON.stringify({ data: normalizedSymptoms }) });
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(getPythonCommand(), [
       pythonScriptPathForSymptoms,
       "--loads",
       symptomsModel,

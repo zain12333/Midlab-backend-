@@ -4,6 +4,21 @@ import multer from "multer";
 import path from "path";
 import { backendRoot } from "../utils/paths.js";
 
+const getPythonCommand = () => {
+  // Full path to Python 3.14 installation
+  const fullPath = "C:\\Users\\zaina\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe";
+  const candidates = [
+    process.env.PYTHON_PATH,
+    fullPath,
+    process.env.PYTHON,
+    process.platform === "win32" ? null : "python3",
+    "python",
+    process.platform === "win32" ? "py" : null,
+  ].filter(Boolean);
+  
+  return candidates[0] || "python";
+};
+
 const router = express.Router();
 
 const diabetesModel = path.join(backendRoot, "aimodels", "diabetes.pkl");
@@ -21,7 +36,7 @@ const pythonScriptPathForBreastCancer = path.join(backendRoot, "breast-cancer.py
 router.post("/diabetes", (req, res) => {
   try {
     const data = req.body.data;
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(getPythonCommand(), [
       pythonScriptPathForDiabetes,
       "--loads",
       diabetesModel,
@@ -66,7 +81,7 @@ router.post("/diabetes", (req, res) => {
 router.post("/heart", (req, res) => {
   try {
     const data = req.body.data;
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(getPythonCommand(), [
       pythonScriptPathForHeart,
       "--loads",
       heartModel,
@@ -111,7 +126,7 @@ router.post("/heart", (req, res) => {
 router.post("/kidney", (req, res) => {
   try {
     const data = req.body.data;
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(getPythonCommand(), [
       pythonScriptPathForKidney,
       "--loads",
       kidneyModel,
@@ -156,7 +171,7 @@ router.post("/kidney", (req, res) => {
 router.post("/liver", (req, res) => {
   try {
     const data = req.body.data;
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(getPythonCommand(), [
       pythonScriptPathForLiver,
       "--loads",
       liverModel,
@@ -201,7 +216,7 @@ router.post("/liver", (req, res) => {
 router.post("/breast-cancer", (req, res) => {
   try {
     const data = req.body.data;
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(getPythonCommand(), [
       pythonScriptPathForBreastCancer,
       "--loads",
       breastCancerModel,
@@ -266,7 +281,7 @@ router.post("/predict-pneumonia", upload.single("image"), (req, res) => {
     const pythonScriptPathForPneumonia = path.join(backendRoot, "pneumonia.py");
 
     // Spawn a Python process to execute the prediction script
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(getPythonCommand(), [
       pythonScriptPathForPneumonia,
       imagePath,
     ]);
@@ -317,7 +332,7 @@ router.post("/predict-malaria", upload.single("image"), (req, res) => {
     const pythonScriptPathForPneumonia = path.join(backendRoot, "malaria.py");
 
     // Spawn a Python process to execute the prediction script
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(getPythonCommand(), [
       pythonScriptPathForPneumonia,
       imagePath,
     ]);

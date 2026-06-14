@@ -9,6 +9,22 @@ export const getCheckoutSession = async (req, res) => {
     const doctor = await Doctor.findById(req.params.doctorId);
     const user = await User.findById(req.userId);
 
+    // Check if doctor and user exist
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor not found" });
+    }
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Check if STRIPE_SECRET_KEY is configured
+    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === "sk_test_change_me") {
+      return res.status(500).json({ 
+        success: false, 
+        message: "Stripe not configured. Please set STRIPE_SECRET_KEY in .env" 
+      });
+    }
+
     // console.log("Doctor ticket price:", doctor.ticketPrice);
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -27,8 +43,8 @@ export const getCheckoutSession = async (req, res) => {
             unit_amount: doctor.ticketPrice * 100,
             product_data: {
               name: doctor.name,
-              description: doctor.bio,
-              images: [doctor.photo],
+              description: doctor.bio || "Doctor Appointment",
+              images: [doctor.photo] || ["https://via.placeholder.com/200"],
             },
           },
           quantity: 1,
@@ -47,9 +63,14 @@ export const getCheckoutSession = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Successfully paid", session });
   } catch (err) {
-    console.log(err);
+    console.error("Stripe Error:", err.message);
+    console.error("Full Error:", err);
     res
       .status(500)
-      .json({ success: false, message: "Error creating checkout session" });
+      .json({ 
+        success: false, 
+        message: "Error creating checkout session",
+        error: err.message // Include error detail for debugging
+      });
   }
 };

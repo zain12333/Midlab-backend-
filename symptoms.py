@@ -22,9 +22,8 @@ medications = pd.read_csv(os.path.join(base_path, "medications.csv"))
 diets = pd.read_csv(os.path.join(base_path, "diets.csv"))
 
 model_path = os.path.join(base_dir, "aimodels", "svc.pkl")
-with open(model_path, 'rb') as model_fileL:
-#with open("./aimodels/svc.pkl", 'rb') as model_fileL:
-    model = pickle.load(model_fileL)
+with open(model_path, 'rb') as model_file:
+    model = pickle.load(model_file)
 
 def get_predicted_value(symptoms):
     input_vector = np.zeros(len(symptoms_dict))
@@ -55,6 +54,79 @@ def helper(dis):
 
 
     return desc,pre,med,die,wrkout
+# Mapping common user inputs to actual symptom names in training data
+SYMPTOM_MAPPING = {
+    'fever': 'high_fever',
+    'high fever': 'high_fever',
+    'sugar': 'irregular_sugar_level',
+    'blood sugar': 'irregular_sugar_level',
+    'high sugar': 'irregular_sugar_level',
+    'irregular sugar': 'irregular_sugar_level',
+    'chills': 'chills',
+    'cold': 'cold_hands_and_feets',
+    'cold hands': 'cold_hands_and_feets',
+    'weakness': 'weakness_in_limbs',
+    'malaise': 'fatigue',
+    'tired': 'fatigue',
+    'tiredness': 'fatigue',
+    'exhaustion': 'fatigue',
+    'weight': 'weight_loss',
+    'weight loss': 'weight_loss',
+    'losing weight': 'weight_loss',
+    'tired and weak': 'lethargy',
+    'lethargy': 'lethargy',
+    'restless': 'restlessness',
+    'restlessness': 'restlessness',
+    'cough': 'cough',
+    'coughing': 'cough',
+    'nausea': 'nausea',
+    'vomit': 'vomiting',
+    'vomiting': 'vomiting',
+    'stomach pain': 'stomach_pain',
+    'belly pain': 'stomach_pain',
+    'abdominal pain': 'abdominal_pain',
+    'headache': 'headache',
+    'head pain': 'headache',
+    'dizziness': 'dizziness',
+    'dizzy': 'dizziness',
+    'skin rash': 'skin_rash',
+    'rash': 'skin_rash',
+    'itching': 'itching',
+    'itchy': 'itching',
+    'sweating': 'sweating',
+    'sweat': 'sweating',
+    'breathless': 'breathlessness',
+    'breathlessness': 'breathlessness',
+    'hard to breathe': 'breathlessness',
+    'chest pain': 'chest_pain',
+    'back pain': 'back_pain',
+    'joint pain': 'joint_pain',
+    'knee pain': 'knee_pain',
+    'neck pain': 'neck_pain',
+    'diarrhea': 'diarrhoea',
+    'loose motion': 'diarrhoea',
+    'constipation': 'constipation',
+    'anxiety': 'anxiety',
+    'anxious': 'anxiety',
+    'mood swings': 'mood_swings',
+    'mood': 'mood_swings',
+    'indigestion': 'indigestion',
+    'acidity': 'acidity',
+    'acid': 'acidity',
+    'dehydration': 'dehydration',
+    'dehydrated': 'dehydration',
+    'sunken eyes': 'sunken_eyes',
+    'yellow skin': 'yellowish_skin',
+    'yellowish skin': 'yellowish_skin',
+    'dark urine': 'dark_urine',
+    'dark pee': 'dark_urine',
+    'hair loss': 'loss_of_appetite',
+    'appetite loss': 'loss_of_appetite',
+    'no appetite': 'loss_of_appetite',
+    'hungry': 'excessive_hunger',
+    'excessive hunger': 'excessive_hunger',
+}
+
 def normalize_symptoms(value):
     if isinstance(value, str):
         items = value.split(",")
@@ -68,7 +140,16 @@ def normalize_symptoms(value):
         if item is None:
             continue
         text = str(item).strip().lower().replace(" ", "_")
-        if text:
+        
+        # First try to map using the symptom mapping dictionary
+        if text in SYMPTOM_MAPPING:
+            mapped_symptom = SYMPTOM_MAPPING[text]
+            normalized.append(mapped_symptom)
+        # Also try with spaces preserved for multi-word mappings
+        elif item.strip().lower() in SYMPTOM_MAPPING:
+            mapped_symptom = SYMPTOM_MAPPING[item.strip().lower()]
+            normalized.append(mapped_symptom)
+        elif text:
             normalized.append(text)
     return normalized
 
