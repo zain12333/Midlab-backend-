@@ -22,7 +22,13 @@ const app = express();
 const port = process.env.PORT || 8000;
 
 const corsOptions = {
-  origin: true,
+  origin: [
+    process.env.CLIENT_SITE_URL || "http://localhost:5173",
+    "https://midlab-frontend.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:5173"
+  ],
+  credentials: true,
 };
 
 app.get("/", (req, res) => {
