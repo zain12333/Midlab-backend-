@@ -31,23 +31,36 @@ const corsOptions = {
   credentials: true,
 };
 
-app.get("/", (req, res) => {
-  res.send("Api is working");
-});
+// Database connection variable
+let mongoConnected = false;
 
 //database connection
 mongoose.set("strictQuery", false);
 const connectDB = async () => {
+  if (mongoConnected) {
+    console.log("Database already connected");
+    return;
+  }
+  
   try {
     await mongoose.connect(process.env.MONGO_URL, {
       //   useNewUrlParser: true,
       //   useUnifiedTopology: true,
     });
+    mongoConnected = true;
     console.log("Mongoose connected");
   } catch (error) {
-    console.log("Mongoose connection failed");
+    console.error("Mongoose connection failed:", error.message);
+    mongoConnected = false;
   }
 };
+
+// Connect to DB once on startup
+connectDB();
+
+app.get("/", (req, res) => {
+  res.send("Api is working");
+});
 
 //middleware
 app.use(express.json());
@@ -64,7 +77,12 @@ app.use("/api/v1/", contactRoute);
 app.use("/api/v1/", forgotPassRoute);
 app.use("/api/v1/", healthRoute);
 
-app.listen(port, () => {
-  connectDB();
-  console.log("Server is running on port " + port);
-});
+// Export app for Vercel serverless
+export default app;
+
+// Only use app.listen for local development
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
+    console.log("Server is running on port " + port);
+  });
+}

@@ -17,17 +17,33 @@ export const register = async (req, res) => {
   const { email, password, name, role, photo, gender } = req.body;
 
   try {
+    // Validate required fields
+    if (!email || !password || !name || !role) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Please provide all required fields: email, password, name, role" 
+      });
+    }
+
     let user = null;
 
     if (role === "patient" || role === "assistant") {
       user = await User.findOne({ email });
     } else if (role === "doctor") {
       user = await Doctor.findOne({ email });
+    } else {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid role. Must be patient, assistant, or doctor" 
+      });
     }
 
     //check if user exist
     if (user) {
-      return res.status(400).json({ message: "User already exist" });
+      return res.status(400).json({ 
+        success: false,
+        message: "User already exist" 
+      });
     }
 
     //hash password
@@ -61,6 +77,7 @@ export const register = async (req, res) => {
       .status(200)
       .json({ success: true, message: "User Successfully created" });
   } catch (error) {
+    console.error("Registration error:", error.message);
     res
       .status(500)
       .json({ success: false, message: "Internal server error, Try again" });
@@ -71,6 +88,14 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Please provide email and password" 
+      });
+    }
+
     let user = null;
 
     const patient = await User.findOne({ email });
@@ -90,7 +115,10 @@ export const login = async (req, res) => {
 
     //check if user exist
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
+      });
     }
 
     //compare password
@@ -98,22 +126,22 @@ export const login = async (req, res) => {
 
     if (!isPasswordMatch) {
       return res
-        .status(404)
-        .json({ status: false, message: "Invalid Credentials, try again" });
+        .status(401)
+        .json({ success: false, message: "Invalid Credentials, try again" });
     }
 
     // get token
     const token = generateToken(user);
     const { password: userPassword, role, appointments, ...rest } = user._doc;
     res.status(200).json({
-      status: true,
+      success: true,
       message: "Successfully login",
       token,
       data: { ...rest },
       role,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: false, message: "Failed to login" });
+    console.error("Login error:", error.message);
+    res.status(500).json({ success: false, message: "Failed to login" });
   }
 };
