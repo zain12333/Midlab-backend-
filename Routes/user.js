@@ -12,23 +12,29 @@ import { authenticate, restrict } from "../auth/verifyToken.js";
 
 const router = express.Router();
 
-router.get("/:id", authenticate, restrict(["patient"]), getSingleUser); // Fetch a single user
-router.get("/", authenticate, restrict(["admin"]), getAllUsers); // Fetch all users
-router.delete("/:id", authenticate, restrict(["patient"]), deleteUser); // Delete a user
-router.put("/profile/me", authenticate, restrict(["patient"]), updateUser); // Update own profile
-router.put("/:id", authenticate, restrict(["patient"]), updateUser); // Update a user
-router.get("/profile/me", authenticate, restrict(["patient"]), getUserProfile); // get userProfile
+// Both patients and lab assistants are stored in the User collection
+// and share the same profile/appointment endpoints.
+const USER_ROLES = ["patient", "assistant"];
+
+router.get("/",    authenticate, restrict(["admin"]),      getAllUsers);
+router.get("/:id", authenticate, restrict(USER_ROLES),    getSingleUser);
+router.delete("/:id", authenticate, restrict(USER_ROLES), deleteUser);
+
+router.get("/profile/me",  authenticate, restrict(USER_ROLES), getUserProfile);
+router.put("/profile/me",  authenticate, restrict(USER_ROLES), updateUser);
+router.put("/:id",         authenticate, restrict(USER_ROLES), updateUser);
+
 router.get(
   "/appointments/my-appointments",
   authenticate,
-  restrict(["patient"]),
+  restrict(USER_ROLES),
   getMyAppointments
-); // get myappointments
+);
 router.post(
   "/appointments/create-appointment",
   authenticate,
-  restrict(["patient"]),
+  restrict(USER_ROLES),
   createAppointment
-); // create appointment
+);
 
 export default router;
