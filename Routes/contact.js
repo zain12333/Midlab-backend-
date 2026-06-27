@@ -6,8 +6,8 @@ const router = express.Router();
 dotEnv.config();
 
 const createTransporter = () => {
-  const emailUser = process.env.USER;
-  const emailPass = process.env.APP_PASS;
+  const emailUser = process.env.EMAIL_USER || process.env.USER;
+  const emailPass = process.env.EMAIL_PASS || process.env.APP_PASS;
 
   if (
     !emailUser ||
@@ -22,10 +22,14 @@ const createTransporter = () => {
     service: "gmail",
     host: "smtp.gmail.com",
     port: 587,
-    secure: false, // Use `true` for port 465, `false` for all other ports
+    secure: false,
     auth: {
       user: emailUser,
       pass: emailPass,
+    },
+    authMethod: "LOGIN",
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 };
@@ -51,9 +55,9 @@ router.post("/contact", async (req, res) => {
     let info = await transporter.sendMail({
       from: {
         name: "Muhammad Umer",
-        address: process.env.USER,
+        address: process.env.EMAIL_USER || process.env.USER,
       },
-      to: process.env.CONTACT_TO || process.env.USER,
+      to: process.env.CONTACT_TO || process.env.EMAIL_USER || process.env.USER,
       replyTo: email,
       subject: subject || "New contact request",
       text: `Email: ${email}\n\nMessage: ${message}`,
@@ -63,7 +67,11 @@ router.post("/contact", async (req, res) => {
     res.status(200).json({ info, message: "Email sent successfully" });
   } catch (error) {
     console.error("Error sending email:", error);
-    res.status(500).json({ message: "Failed to send email" });
+    const message =
+      error && error.responseCode === 535
+        ? "Invalid email credentials. Check EMAIL_USER and EMAIL_PASS in backend/.env. If using Gmail, create an App Password and enable 2FA."
+        : "Failed to send email";
+    res.status(500).json({ message });
   }
 });
 

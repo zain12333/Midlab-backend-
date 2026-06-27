@@ -23,14 +23,18 @@ router.post("/forgot-password", async (req, res) => {
       port: 587,
       secure: false,
       auth: {
-        user: process.env.USER,
-        pass: process.env.APP_PASS,
+        user: process.env.EMAIL_USER || process.env.USER,
+        pass: process.env.EMAIL_PASS || process.env.APP_PASS,
+      },
+      authMethod: "LOGIN",
+      tls: {
+        rejectUnauthorized: false,
       },
     });
     const mailOptions = {
       from: {
         name: "Muhammad Umer",
-        user: process.env.USER,
+        address: process.env.EMAIL_USER || process.env.USER,
       },
       to: "awminhas619@gmail.com",
       subject: "Sending Email for Reset Password",
